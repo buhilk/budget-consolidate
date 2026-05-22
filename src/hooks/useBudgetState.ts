@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   INITIAL_STATE,
   type BudgetState,
@@ -8,14 +8,60 @@ import {
   teamAllocation,
   headcount,
   formatLkr,
-} from './budget';
+} from '../budget';
+import { loadPersistedState, savePersistedState } from '../persistence';
 
 export type { BudgetState, Team };
 
+export type SaveStatus = 'loading' | 'idle' | 'saving' | 'saved' | 'error';
+
+const SAVE_DEBOUNCE_MS = 400;
+
 export function useBudgetState() {
   const [state, setState] = useState<BudgetState>(INITIAL_STATE);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('loading');
+  const readyRef = useRef(false);
+  const skipNextSaveRef = useRef(true);
+
   const pot = computePot(state);
   const used = centralUsed(state.teams);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadPersistedState()
+      .then((loaded) => {
+        if (cancelled) return;
+        if (loaded) setState(loaded);
+        readyRef.current = true;
+        skipNextSaveRef.current = true;
+        setSaveStatus('saved');
+      })
+      .catch(() => {
+        if (cancelled) return;
+        readyRef.current = true;
+        setSaveStatus('error');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!readyRef.current) return;
+    if (skipNextSaveRef.current) {
+      skipNextSaveRef.current = false;
+      return;
+    }
+
+    setSaveStatus('saving');
+    const timer = window.setTimeout(() => {
+      savePersistedState(state)
+        .then(() => setSaveStatus('saved'))
+        .catch(() => setSaveStatus('error'));
+    }, SAVE_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [state]);
 
   const setCentralBudget = useCallback((n: number) => {
     setState((s) => ({ ...s, centralBudget: Math.max(0, n) }));
@@ -78,6 +124,7 @@ export function useBudgetState() {
     state,
     pot,
     used,
+    saveStatus,
     setCentralBudget,
     addTeam,
     removeTeam,
@@ -91,4 +138,4 @@ export function useBudgetState() {
   };
 }
 
-export type BudgetPrototypeApi = ReturnType<typeof useBudgetState>;
+export type BudgetApi = ReturnType<typeof useBudgetState>;

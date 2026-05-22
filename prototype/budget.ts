@@ -1,2 +1,2 @@
-/** Portable budget logic — canonical re-export for non-UI consumers. */
-export * from './ui/src/budget.ts';
+/** @deprecated Use `../src/budget.ts`. Kept for prototype archive references. */
+export * from '../src/budget.ts';

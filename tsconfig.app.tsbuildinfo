@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/budget.ts","./src/main.tsx","./src/persistence.ts","./src/components/PotAlert.tsx","./src/components/TeamMemberEditor.tsx","./src/hooks/useBudgetState.ts"],"version":"5.6.3"}

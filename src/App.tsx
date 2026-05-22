@@ -1,22 +1,52 @@
-import { maxPeopleAtBudget } from '../budget';
-import type { VariantProps } from './shared';
-import { PotAlert, StateDump, TeamMemberEditor } from './shared';
+import { maxPeopleAtBudget } from './budget';
+import { PotAlert } from './components/PotAlert';
+import { TeamMemberEditor } from './components/TeamMemberEditor';
+import { useBudgetState } from './hooks/useBudgetState';
 
-/** A — Hero pot: central meter dominates; team cards in a grid below. */
-export function VariantA(api: VariantProps) {
-  const { state, pot, setCentralBudget, addTeam, removeTeam, renameTeam, formatLkr } =
+function saveStatusLabel(status: ReturnType<typeof useBudgetState>['saveStatus']): string {
+  switch (status) {
+    case 'loading':
+      return 'Loading…';
+    case 'saving':
+      return 'Saving…';
+    case 'saved':
+      return 'Saved to data/state.json';
+    case 'error':
+      return 'Could not save — is the dev server running?';
+    default:
+      return '';
+  }
+}
+
+export default function App() {
+  const api = useBudgetState();
+  const { state, pot, saveStatus, setCentralBudget, addTeam, removeTeam, renameTeam, formatLkr } =
     api;
+
+  if (saveStatus === 'loading') {
+    return (
+      <div className="app app--loading">
+        <p>Loading budget from data/state.json…</p>
+      </div>
+    );
+  }
   const fill = pot.budget > 0 ? Math.min(100, pot.percentUsed) : 0;
   const overflow = pot.status === 'over' && pot.budget > 0 ? pot.percentUsed - 100 : 0;
 
   return (
-    <div className="variant variant-a">
-      <header className="proto-banner">
-        <span>PROTOTYPE</span> Team outing budget — Variant A (Hero pot)
+    <div className="app">
+      <header className="app-header">
+        <div>
+          <h1>Team outing budget</h1>
+          <p className="app-subtitle">Central pot · 7,000 LKR per attendee</p>
+        </div>
+        <p className={`save-status save-status--${saveStatus}`} role="status" aria-live="polite">
+          {saveStatusLabel(saveStatus)}
+        </p>
       </header>
 
-      <section className="pot-hero" aria-labelledby="pot-heading-a">
-        <h2 id="pot-heading-a">Central pot</h2>
+      <section className="pot-hero" aria-labelledby="pot-heading">
+        <h2 id="pot-heading">Central pot</h2>
         <label className="budget-input">
           Central budget (LKR)
           <input
@@ -80,6 +110,7 @@ export function VariantA(api: VariantProps) {
                 <input
                   className="team-name"
                   value={t.name}
+                  aria-label="Team name"
                   onChange={(e) => renameTeam(t.id, e.target.value)}
                 />
                 <TeamMemberEditor api={api} teamId={t.id} members={t.members} />
@@ -96,8 +127,6 @@ export function VariantA(api: VariantProps) {
           })}
         </div>
       </section>
-
-      <StateDump api={api} />
     </div>
   );
 }
