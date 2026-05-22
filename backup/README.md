@@ -1,13 +1,23 @@
 # Budget consolidate
 
-Small web app prototype: consolidate one **central outing budget** across teams using **allocation-only** math.
+Consolidate one **central outing budget** across teams. Each attendee allocates **7,000 LKR**; team budget = `headcount × 7,000 LKR`. See [PRODUCT.md](./PRODUCT.md).
 
-**Rules (v1):** each attendee allocates **7,000 LKR** from the central pool; a team’s budget is `headcount × 7,000 LKR`. **Fully using** the central pot is OK; amber **near-limit from 98%** usage onward; **over** the pot is danger. Alerts + visual **central pot** meter ([PRODUCT.md](./PRODUCT.md)).
-
-## Prototype (throwaway UI)
+## Run
 
 ```bash
-cd prototype/ui && npm run prototype
+npm install
+npm run dev
 ```
 
-**Design winner: Variant A (Hero pot).** See [prototype/NOTES.md](./prototype/NOTES.md).
+Open http://localhost:5173
+
+State is stored in **`data/state.json`** (loaded on open, auto-saved after edits). Copy `data/state.example.json` to reset a template.
+
+## Layout
+
+**Hero pot** (promoted from prototype Variant A): central meter and alerts on top, team cards below.
+
+## Spec & history
+
+- [PRODUCT.md](./PRODUCT.md) — rules (98% near-limit, warn-only overage, central pot meter)
+- [prototype/NOTES.md](./prototype/NOTES.md) — UI prototype verdict (Variant A)

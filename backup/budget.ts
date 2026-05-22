@@ -1,8 +1,3 @@
-/**
- * Portable budget logic — lift into production; delete the UI shell only.
- * Question: does allocation + 98% near-limit + overage behave as PRODUCT.md?
- */
-
 export const PER_PERSON_LKR = 7_000;
 export const NEAR_LIMIT_RATIO = 0.98;
 
@@ -115,3 +110,27 @@ export const INITIAL_STATE: BudgetState = {
     { id: '3', name: 'Ops', members: [] },
   ],
 };
+
+export function parseBudgetState(raw: unknown): BudgetState | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const { centralBudget, teams } = raw as Record<string, unknown>;
+  if (typeof centralBudget !== 'number' || !Number.isFinite(centralBudget) || centralBudget < 0) {
+    return null;
+  }
+  if (!Array.isArray(teams)) return null;
+  const parsedTeams: Team[] = [];
+  for (const t of teams) {
+    if (!t || typeof t !== 'object') return null;
+    const row = t as Record<string, unknown>;
+    if (typeof row.id !== 'string' || typeof row.name !== 'string' || !Array.isArray(row.members)) {
+      return null;
+    }
+    if (!row.members.every((m) => typeof m === 'string')) return null;
+    parsedTeams.push({
+      id: row.id,
+      name: row.name,
+      members: [...row.members],
+    });
+  }
+  return { centralBudget, teams: parsedTeams };
+}

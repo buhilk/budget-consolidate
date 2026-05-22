@@ -1,0 +1,26 @@
+{
+  "centralBudget": 350000,
+  "teams": [
+    {
+      "id": "1",
+      "name": "Platform",
+      "members": [
+        "Ada",
+        "Ben",
+        "X"
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Design",
+      "members": [
+        "Cara"
+      ]
+    },
+    {
+      "id": "3",
+      "name": "Ops",
+      "members": []
+    }
+  ]
+}
